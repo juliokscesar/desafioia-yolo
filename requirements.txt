@@ -1,0 +1,16 @@
+numpy==1.26.4
+pandas
+matplotlib
+PyQt6
+
+ipykernel
+
+torch
+torchvision
+torchaudio
+
+ultralytics
+
+roboflow==1.1.33
+supervision
+opencv-python
