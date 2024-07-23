@@ -5,7 +5,7 @@
 - [Resultados](#resultados)
 
 ## Detalhes
-Utilizei um modelo treinado na plataforma [Roboflow](https://universe.roboflow.com/) com um dataset que é a junção de vários datasets de projetos de detecção de folhas com YOLO.
+Utilizei um modelo treinado na plataforma [Roboflow](https://universe.roboflow.com/) com um dataset que é a junção de vários datasets de projetos de detecção de folhas/plantas com YOLO, porque os modelos pré-treinados (como YOLOv8s) não detectam bem folhas ou plantas.
 
 O modelo final, treinado a partir do modelo YOLO-NAS, pode ser encontrado [aqui](https://universe.roboflow.com/jc-98d3n/plant-leaf-detection-att1p/dataset/2).
 
