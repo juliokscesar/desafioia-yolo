@@ -9,10 +9,17 @@ import tempfile
 import matplotlib.pyplot as plt
 
 
-def slice_infer_image(api_key: str, imgpath: str, conf=40, overlap=20, slice_wh=(480, 480), slice_overlap_ratio=(0.1, 0.1)) -> sv.Detections:    
+def get_roboflow_model(api_key: str, project: str, version: int):
     rf = Roboflow(api_key=api_key)
-    project = rf.workspace().project("leaf-detection-a4rgd")
-    model = project.version(5).model
+    project = rf.workspace().project(project)
+    model = project.version(version).model
+
+    return model
+
+
+def slice_infer_image(api_key: str, imgpath: str, conf=50, overlap=50, slice_wh=(640, 640), slice_overlap_ratio=(0.1, 0.1)) -> sv.Detections:    
+    #model = get_roboflow_model(api_key, "plant-leaf-detection-att1p", 1)
+    model = get_roboflow_model(api_key, "plant-leaf-detection-att1p", 2)
 
     def sv_slice_callback(image: np.ndarray) -> sv.Detections:
         with tempfile.NamedTemporaryFile(suffix=Path(imgpath).suffix) as f:
@@ -31,18 +38,12 @@ def slice_infer_image(api_key: str, imgpath: str, conf=40, overlap=20, slice_wh=
 
 
 def generate_annotated_image(default_imgpath: str, detections: sv.Detections) -> np.ndarray:
-    label_annotator = sv.LabelAnnotator()
-    box_annotator = sv.BoxAnnotator()
+    box_annotator = sv.BoxAnnotator(thickness=1)
 
     default_img = cv2.imread(default_imgpath)
 
     annotated_image = box_annotator.annotate(
         scene=default_img.copy(),
-        detections=detections
-    )
-
-    annotated_image = label_annotator.annotate(
-        scene=annotated_image,
         detections=detections
     )
 
@@ -58,9 +59,11 @@ def plot_image(img: np.ndarray):
     plt.show()
 
 
-def save_image(img: np.ndarray, dir: str):
+def save_image(img: np.ndarray, dir: str, name: str):
     with sv.ImageSink(target_dir_path=dir) as sink:
-        sink.save_image(image=img)
+        sink.save_image(image=img, image_name=name)
+    
+    print(f"Imagem salva em ./{dir}/{name}")
 
 
 def main():
@@ -74,41 +77,35 @@ def main():
 
     parser.add_argument("--confidence", "-c", 
                         type=int, 
-                        nargs=1, 
-                        default=40, 
-                        help="Valor 'confidence' para fazer a inferencia (entre 0 e 100)"
+                        default=50, 
+                        help="Padrão: 50. Valor 'confidence' para fazer a inferencia (entre 0 e 100). Objetos detectados com valor abaixo desse serão descartados."
     )
     parser.add_argument("--overlap", "-o",
                         type=int,
-                        nargs=1,
-                        default=20,
-                        help="Valor máximo de 'overlap' até juntar duas detecções (entre 0 e 100)"
+                        default=50,
+                        help="Padrão: 50. Valor máximo de 'overlap' até juntar duas detecções (entre 0 e 100)"
     )
 
     parser.add_argument("--slicew",
                         type=int,
-                        nargs=1,
-                        default=480,
-                        help="Largura de cada recorte (slice) da imagem para fazer inferências"
+                        default=640,
+                        help="Padrão: 640. Largura de cada recorte (slice) da imagem para fazer inferências"
     )
     parser.add_argument("--sliceh",
                         type=int,
-                        nargs=1,
-                        default=480,
-                        help="Altura de cada recorte (slice) da imagem para fazer inferência"
+                        default=640,
+                        help="Padrão: 640. Altura de cada recorte (slice) da imagem para fazer inferência"
     )
 
     parser.add_argument("--sliceoverlapw",
                         type=float,
-                        nargs=1,
                         default=0.1,
-                        help="Valor de largura de 'overlap' para cada divisão (slice) (entre 0 e 1)"
+                        help="Padrão: 0.1. Valor de largura de 'overlap' para cada divisão (slice) (entre 0 e 1)"
     )
     parser.add_argument("--sliceoverlaph",
                         type=float,
-                        nargs=1,
                         default=0.1,
-                        help="Valor de altura de 'overlap' para cada divisão (slice) (entre 0 e 1)"
+                        help="Padrão: 0.1. Valor de altura de 'overlap' para cada divisão (slice) (entre 0 e 1)"
     )
 
     args = parser.parse_args()
@@ -123,6 +120,7 @@ def main():
     slice_wh = (args.slicew, args.sliceh)
     slice_overlap_wh = (args.sliceoverlapw, args.sliceoverlaph)
 
+
     api_key = ""
     try:
         api_key = os.environ["ROBOFLOW_API_KEY"]
@@ -133,10 +131,11 @@ def main():
     detections = slice_infer_image(api_key, img_path, conf, overlap, slice_wh, slice_overlap_wh)
     annotated_image = generate_annotated_image(img_path, detections)
 
+    print(f"Parâmetros: Conf={conf}, overlap={overlap}, slice_wh={slice_wh}, slice_overlap_wh={slice_overlap_wh}")
     print(f"Contagem total: {len(detections.xyxy)} objetos")
 
     if args.save:
-       save_image(annotated_image, "exp")
+       save_image(annotated_image, "exp", "exp" + os.path.basename(img_path))
     else:
         plot_image(annotated_image)
 
