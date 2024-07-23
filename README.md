@@ -89,27 +89,36 @@ O código basicamente utiliza a API da plataforma Roboflow pelos pacotes `robofl
 Em cada imagem, o 'melhor resultado' foi obtido depois de vários testes com diferentes valores de parâmetros (*confidence, overlap, slice width, slice height, slice overlap width, slice overlap height*).
 
 ### Primeira imagem
-**Melhor resultado**: 19 (de 19)
+**Melhor resultado**: 19 (de 19).
+
 **Parâmetros**: Conf=50, overlap=50, slice_wh=(640, 640), slice_overlap_wh=(0.1, 0.1)
-Imagem com anotações:
+
 ![resultado deteccao imgs/0.jpg](exp/exp0.jpg)
 
 ### Segunda imagem
-**Melhor resultado**: 25 (de 25) (mas uma delas detecta apenas na metade)
+**Melhor resultado**: 25 (de 25) (mas uma delas detecta apenas na metade).
+
 **Parâmetros**: Conf=50, overlap=10, slice_wh=(640, 640), slice_overlap_wh=(0.1, 0.1)
+
 ![resultado deteccao imgs/1.jpg](exp/exp1.jpg)
 
 ### Terceira imagem
-**Melhor resultado**: 55 (de 55) **mas tem uma delas que não está detectando na lateral direita. Então tem uma repetida
+**Melhor resultado**: 55 (de 55) **mas tem uma delas que não está detectando na lateral direita. Então tem uma repetida.
+
 **Parâmetros**: Conf=50, overlap=50, slice_wh=(640, 320), slice_overlap_wh=(0.1, 0.1)
+
 ![resultado deteccao imgs/2.jpg](exp/exp2.jpg)
 
 ### Quarta imagem
 **Melhor resultado**: 201 (de ??) **Como não sei a contagem real, julguei o "melhor" resultado pelo que parecia ter menos detecções repetidas e duplas (duas folhas em uma caixa só) e que não fugiam muito de um valor comum quando testava com outros parâmetros.
+
 **Parâmetros**: Conf=50, overlap=50, slice_wh=(320, 320), slice_overlap_wh=(0.1, 0.1)
+
 ![resultado deteccao imgs/3.jpg](exp/exp3.jpg)
 
 ### Quinta imagem
 **Melhor resultado:** 434 (de ??) **Julguei o melhor resultado da mesma forma que a anterior
+
 **Parâmetros**: Conf=50, overlap=50, slice_wh=(160, 160), slice_overlap_wh=(0.4, 0.4)
+
 ![resultado deteccao imgs/4.jpg](exp/exp4.jpg)
