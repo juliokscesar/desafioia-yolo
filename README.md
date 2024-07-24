@@ -22,7 +22,7 @@ Os meus rascunhos e testes de códigos estão todos no Jupyter Notebook [rascunh
 ## Código e reprodução
 Para utilizar o código de detecção, é necessário clonar o repositório e instalar todos os pacotes que o código utiliza (recomendo ser em um ambiente virtual):
 ```
-git clone https://github.com/juliokscesar/desafioia-yolo
+git clone https://github.com/juliokscesar/desafioia-yolo.git
 cd desafioia-yolo
 python -m venv .venv
 
