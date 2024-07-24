@@ -1,14 +1,14 @@
 import argparse
 import os
+import shutil
 from roboflow import Roboflow
 import supervision as sv
 import numpy as np
 import cv2
 from pathlib import Path
-import tempfile
 import matplotlib.pyplot as plt
 
-
+# Get YOLO trained model from Roboflow
 def get_roboflow_model(api_key: str, project: str, version: int):
     rf = Roboflow(api_key=api_key)
     project = rf.workspace().project(project)
@@ -17,12 +17,29 @@ def get_roboflow_model(api_key: str, project: str, version: int):
     return model
 
 
+# tmpfile module raises error in Windows
+# so this is a turnaround to create tempfiles in the process of slicing
+def generate_temp_path(suffix: str) -> str:
+    if not(os.path.isdir(".temp")):
+        os.mkdir(".temp")
+    return os.path.join(".temp", os.urandom(24).hex()+suffix)
+
+
+# delete any generated temp images in the process of slicing
+def clear_temp_folder():
+    try:
+        shutil.rmtree(".temp")
+    except:
+        print("DEBUG: coudln't delete temp images from '.temp'")
+
+
+# Detect objects in image using slices
 def slice_infer_image(api_key: str, imgpath: str, conf=50, overlap=50, slice_wh=(640, 640), slice_overlap_ratio=(0.1, 0.1)) -> sv.Detections:    
-    #model = get_roboflow_model(api_key, "plant-leaf-detection-att1p", 1)
     model = get_roboflow_model(api_key, "plant-leaf-detection-att1p", 2)
 
     def sv_slice_callback(image: np.ndarray) -> sv.Detections:
-        with tempfile.NamedTemporaryFile(suffix=Path(imgpath).suffix) as f:
+        tmpfile = generate_temp_path(Path(imgpath).suffix)
+        with open(tmpfile, 'wb') as f:
             cv2.imwrite(f.name, image)
             result = model.predict(f.name, confidence=conf, overlap=overlap).json()
 
@@ -34,9 +51,11 @@ def slice_infer_image(api_key: str, imgpath: str, conf=50, overlap=50, slice_wh=
     slicer = sv.InferenceSlicer(callback=sv_slice_callback, slice_wh=slice_wh, overlap_ratio_wh=slice_overlap_ratio)
     sliced_detections = slicer(image=image)
 
+    clear_temp_folder()
     return sliced_detections
 
 
+# Annotated detections in image
 def generate_annotated_image(default_imgpath: str, detections: sv.Detections) -> np.ndarray:
     box_annotator = sv.BoxAnnotator(thickness=1)
 
